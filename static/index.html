@@ -14,16 +14,16 @@
 </head>
 <body>
 
-  <!-- Минали събития най-горе -->
-  <h2>МИНАЛИ СЪБИТИЯ</h2>
+  <!-- ПРЕМЕСТЕНО НАЙ-ГОРЕ -->
+  <h2>МИНАЛИ</h2>
   <div id="past"></div>
 
-  <!-- Днес по средата -->
+  <!-- ДНЕС В СРЕДАТА -->
   <h2>ДНЕС</h2>
   <div id="today"></div>
 
-  <!-- Следващи най-долу -->
-  <h2>СЛЕДВАЩИ СЪБИТИЯ</h2>
+  <!-- СЛЕДВАЩИ НАЙ-ДОЛУ -->
+  <h2>СЛЕДВАЩИ</h2>
   <div id="next"></div>
 
   <script>
@@ -70,13 +70,19 @@
     }
 
     async function loadPast() {
-      const res = await fetch("/api/events/next");
-      const data = await res.json();
+      const resToday = await fetch("/api/events/today");
+      const resNext = await fetch("/api/events/next");
+
+      const today = await resToday.json();
+      const next = await resNext.json();
+
+      const all = [...today, ...next];
+
       const box = document.getElementById("past");
       box.innerHTML = "";
 
       const now = new Date();
-      const past = data.filter(ev => new Date(ev.datetime) < now);
+      const past = all.filter(ev => new Date(ev.datetime) < now);
 
       if (!past.length) {
         box.innerHTML = "<div class='small'>Няма минали събития</div>";
@@ -95,10 +101,10 @@
       });
     }
 
-    loadPast();
     loadToday();
     loadNext();
-    setInterval(() => { loadPast(); loadToday(); loadNext(); }, 60000);
+    loadPast();
+    setInterval(() => { loadToday(); loadNext(); loadPast(); }, 60000);
   </script>
 </body>
 </html>
