@@ -38,6 +38,21 @@
       return `${day} ${month}, ${hours}:${minutes}`;
     }
 
+    // BBCode → HTML (поддържа [color=xxxxxx]НСЕО[/color])
+    function bbcode(text) {
+      return text
+        .replace(/
+
+\[color=(#[0-9a-fA-F]{6}|[0-9a-fA-F]{6})\]
+
+/g, '<span style="color:$1;">')
+        .replace(/
+
+\[\/color\]
+
+/g, '</span>');
+    }
+
     async function loadToday() {
       const res = await fetch("/api/events/today");
       const data = await res.json();
@@ -51,9 +66,9 @@
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">${ev.title}</div>
+          <div class="title">${bbcode(ev.title)}</div>
           <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
+          <div class="small">${bbcode(ev.description)}</div>
         `;
         box.appendChild(div);
       });
@@ -72,9 +87,9 @@
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">${ev.title}</div>
+          <div class="title">${bbcode(ev.title)}</div>
           <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
+          <div class="small">${bbcode(ev.description)}</div>
         `;
         box.appendChild(div);
       });
@@ -104,9 +119,9 @@
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">${ev.title}</div>
+          <div class="title">${bbcode(ev.title)}</div>
           <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
+          <div class="small">${bbcode(ev.description)}</div>
         `;
         box.appendChild(div);
       });
