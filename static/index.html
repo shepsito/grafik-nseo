@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <title>График НСЕО</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { background:#0b0b13; color:#eee; font-family:system-ui; margin:0; padding:10px; }
+    h2 { margin-top:20px; }
+    .card { background:#1a1a24; padding:10px; margin:8px 0; border-radius:8px; }
+    .title { font-weight:bold; }
+    .small { color:#aaa; font-size:0.9em; }
+  </style>
+</head>
+<body>
+  <h2>ДНЕС</h2>
+  <div id="today"></div>
+
+  <h2>СЛЕДВАЩИ</h2>
+  <div id="next"></div>
+
+  <script>
+    async function loadToday() {
+      const res = await fetch("/api/events/today");
+      const data = await res.json();
+      const box = document.getElementById("today");
+      box.innerHTML = "";
+      if (!data.length) {
+        box.innerHTML = "<div class='small'>Няма събития за днес</div>";
+        return;
+      }
+      data.forEach(ev => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div class="title">${ev.title}</div>
+          <div class="small">${ev.datetime} | ${ev.shift} | ${ev.facility}</div>
+          <div class="small">${ev.description}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    async function loadNext() {
+      const res = await fetch("/api/events/next");
+      const data = await res.json();
+      const box = document.getElementById("next");
+      box.innerHTML = "";
+      if (!data.length) {
+        box.innerHTML = "<div class='small'>Няма предстоящи събития</div>";
+        return;
+      }
+      data.forEach(ev => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div class="title">${ev.title}</div>
+          <div class="small">${ev.datetime} | ${ev.shift} | ${ev.facility}</div>
+          <div class="small">${ev.description}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    loadToday();
+    loadNext();
+    setInterval(() => { loadToday(); loadNext(); }, 60000);
+  </script>
+</body>
+</html>
