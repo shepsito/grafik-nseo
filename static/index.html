@@ -24,7 +24,7 @@
   <div id="next"></div>
 
   <script>
-    // Форматиране на дата: "25 юли, 07:00"
+    // "25 юли, 07:00"
     function formatBG(dateString) {
       const d = new Date(dateString);
       const day = d.getDate();
@@ -33,6 +33,23 @@
       const hours = String(d.getHours()).padStart(2, "0");
       const minutes = String(d.getMinutes()).padStart(2, "0");
       return `${day} ${month}, ${hours}:${minutes}`;
+    }
+
+    // [color=ff0000]НСЕО[/color] → <span style="color:#ff0000;">НСЕО</span>
+    function convertColor(text) {
+      if (!text) return "";
+      return text.replace(
+        /
+
+\[color=([0-9a-fA-F]{6})\]
+
+(.*?)
+
+\[\/color\]
+
+/g,
+        '<span style="color:#$1;">$2</span>'
+      );
     }
 
     async function loadToday() {
@@ -48,9 +65,9 @@
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">${ev.title}</div>
+          <div class="title">${convertColor(ev.title)}</div>
           <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
+          <div class="small">${convertColor(ev.description)}</div>
         `;
         box.appendChild(div);
       });
@@ -69,9 +86,9 @@
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">${ev.title}</div>
+          <div class="title">${convertColor(ev.title)}</div>
           <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
+          <div class="small">${convertColor(ev.description)}</div>
         `;
         box.appendChild(div);
       });
@@ -101,9 +118,9 @@
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">${ev.title}</div>
+          <div class="title">${convertColor(ev.title)}</div>
           <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
+          <div class="small">${convertColor(ev.description)}</div>
         `;
         box.appendChild(div);
       });
