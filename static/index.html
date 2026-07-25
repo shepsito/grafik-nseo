@@ -14,20 +14,16 @@
 </head>
 <body>
 
-  <!-- Минали събития най-горе -->
   <h2>МИНАЛИ</h2>
   <div id="past"></div>
 
-  <!-- Днес -->
   <h2>ДНЕС</h2>
   <div id="today"></div>
 
-  <!-- Следващи -->
   <h2>СЛЕДВАЩИ</h2>
   <div id="next"></div>
 
   <script>
-    // Форматиране на дата: "25 юли, 07:00"
     function formatBG(dateString) {
       const d = new Date(dateString);
       const day = d.getDate();
@@ -38,8 +34,7 @@
       return `${day} ${month}, ${hours}:${minutes}`;
     }
 
-    // HTML цвят вместо BBCode
-    function colorHTML(text) {
+    function convertColor(text) {
       return text.replace(/
 
 \[color=(#[0-9a-fA-F]{6}|[0-9a-fA-F]{6})\]
@@ -65,9 +60,9 @@
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">${colorHTML(ev.title)}</div>
+          <div class="title">${convertColor(ev.title)}</div>
           <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${colorHTML(ev.description)}</div>
+          <div class="small">${convertColor(ev.description)}</div>
         `;
         box.appendChild(div);
       });
@@ -86,9 +81,9 @@
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">${colorHTML(ev.title)}</div>
+          <div class="title">${convertColor(ev.title)}</div>
           <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${colorHTML(ev.description)}</div>
+          <div class="small">${convertColor(ev.description)}</div>
         `;
         box.appendChild(div);
       });
@@ -118,9 +113,9 @@
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">${colorHTML(ev.title)}</div>
+          <div class="title">${convertColor(ev.title)}</div>
           <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${colorHTML(ev.description)}</div>
+          <div class="small">${convertColor(ev.description)}</div>
         `;
         box.appendChild(div);
       });
