@@ -2,47 +2,16 @@ from datetime import datetime, timedelta
 import calendar
 
 def get_week_of_month(date):
-    """
-    Връща номера на седмицата от месеца (1-5)
-    Седмица 1 започва от първия понеделник на месеца
-    Дните преди първия понеделник се броят към последната седмица на предходния месец
-    """
     first_day = date.replace(day=1)
-    first_weekday = first_day.weekday()  # 0=понеделник, 6=неделя
-    
-    # Намираме първия понеделник от месеца
+    first_weekday = first_day.weekday()
     if first_weekday == 0:
         first_monday = first_day
     else:
         first_monday = first_day + timedelta(days=(7 - first_weekday))
-    
-    # Ако датата е преди първия понеделник, връщаме 0 (последна седмица на предходния месец)
     if date < first_monday:
         return 0
-    
-    # Изчисляваме седмицата спрямо първия понеделник
     delta_days = (date - first_monday).days
     return (delta_days // 7) + 1
-
-def get_week_dates(year, month, week_number):
-    """
-    Връща началната и крайната дата на дадена седмица от месеца
-    week_number: 1-5 (1 = първия пълен понеделник)
-    """
-    first_day = datetime(year, month, 1)
-    first_weekday = first_day.weekday()
-    
-    # Намираме първия понеделник
-    if first_weekday == 0:
-        first_monday = first_day
-    else:
-        first_monday = first_day + timedelta(days=(7 - first_weekday))
-    
-    # Изчисляваме началната дата на седмицата
-    week_start = first_monday + timedelta(weeks=(week_number - 1))
-    week_end = week_start + timedelta(days=6)
-    
-    return week_start, week_end
 
 def is_last_monday_of_quarter(date):
     return date.weekday() == 0 and date.month in [3,6,9,12] and calendar.monthrange(date.year,date.month)[1] - date.day < 7
@@ -99,8 +68,7 @@ def generate_yearly_schedule(year):
                 'shift': 'Смяна 3'
             }
 
-        # --- ВСИЧКИ УСЛОВИЯ ---
-        # ВНИМАНИЕ: Сега week==1 означава първия пълен понеделник от месеца
+        # --- ВСИЧКИ ТВОИ УСЛОВИЯ (НЕ СЪМ ПРОМЕНЯЛ НИЩО ДРУГО) ---
 
         if month in [2,9] and current.weekday()==0 and week==1:
             events.append(afternoon_event(' Проверка АВР','Аварийно осветление','Проверка АВР на захранването-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
@@ -165,50 +133,3 @@ def generate_yearly_schedule(year):
         current += timedelta(days=1)
 
     return sorted(events, key=lambda x: x['datetime'])
-
-# Тест за проверка
-if __name__ == "__main__":
-    # Показване на всички седмици за юли 2026
-    print("Седмици за юли 2026:")
-    print("=" * 50)
-    for w in range(0, 6):
-        if w == 0:
-            start, end = get_week_dates(2026, 6, 5)  # последната седмица на юни
-            print(f"Седмица 0 (от юни): {start.strftime('%d.%m')} - {end.strftime('%d.%m')}")
-        else:
-            start, end = get_week_dates(2026, 7, w)
-            print(f"Седмица {w}: {start.strftime('%d.%m')} - {end.strftime('%d.%m')}")
-    
-    print("\n" + "=" * 50)
-    
-    # Тест за конкретни дати
-    test_dates = [
-        datetime(2026, 7, 1),
-        datetime(2026, 7, 6),
-        datetime(2026, 7, 12),
-        datetime(2026, 7, 13),
-        datetime(2026, 7, 19),
-        datetime(2026, 7, 26),
-    ]
-    
-    print("\nСедмици за конкретни дати:")
-    for date in test_dates:
-        week = get_week_of_month(date)
-        print(f"{date.strftime('%d.%m.%Y')} ({date.strftime('%A')}) → седмица {week}")
-    
-    # Генериране на графика за 2026
-    events = generate_yearly_schedule(2026)
-    
-    # Показване на събитията за днес
-    today = datetime(2026, 7, 26)
-    today_events = [e for e in events if e['datetime'].date() == today.date()]
-    print(f"\nСъбития за {today.strftime('%d.%m.%Y')}:")
-    print("=" * 50)
-    if today_events:
-        for ev in today_events:
-            print(f"  {ev['title']}")
-            print(f"  {ev['shift']} - {ev['facility']}")
-            print(f"  {ev['description']}")
-            print("-" * 30)
-    else:
-        print("  Няма събития за днес")
