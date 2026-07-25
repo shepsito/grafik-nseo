@@ -13,14 +13,15 @@
   </style>
 </head>
 <body>
+
+  <h2>МИНАЛИ СЪБИТИЯ</h2>
+  <div id="past"></div>
+
   <h2>ДНЕС</h2>
   <div id="today"></div>
 
-  <h2>СЛЕДВАЩИ</h2>
+  <h2>СЛЕДВАЩИ СЪБИТИЯ</h2>
   <div id="next"></div>
-
-  <h2>МИНАЛИ</h2>
-  <div id="past"></div>
 
   <script>
     async function loadToday() {
@@ -66,35 +67,18 @@
     }
 
     async function loadPast() {
-      const res = await fetch("/api/events/next");
-      const data = await res.json();
+      const resToday = await fetch("/api/events/today");
+      const resNext = await fetch("/api/events/next");
+
+      const today = await resToday.json();
+      const next = await resNext.json();
+
+      const all = [...today, ...next];
+
       const box = document.getElementById("past");
       box.innerHTML = "";
 
       const now = new Date();
-      const past = data.filter(ev => new Date(ev.datetime) < now);
+      const past = all.filter(ev => new Date(ev.datetime) < now);
 
-      if (!past.length) {
-        box.innerHTML = "<div class='small'>Няма минали събития</div>";
-        return;
-      }
-
-      past.slice(-10).forEach(ev => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <div class="title">${ev.title}</div>
-          <div class="small">${ev.datetime} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
-        `;
-        box.appendChild(div);
-      });
-    }
-
-    loadToday();
-    loadNext();
-    loadPast();
-    setInterval(() => { loadToday(); loadNext(); loadPast(); }, 60000);
-  </script>
-</body>
-</html>
+      if (!past.length
