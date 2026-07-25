@@ -14,20 +14,24 @@
 </head>
 <body>
 
-  <!-- Минали събития най-горе -->
   <h2>МИНАЛИ</h2>
   <div id="past"></div>
 
-  <!-- Днес -->
   <h2>ДНЕС</h2>
   <div id="today"></div>
 
-  <!-- Следващи -->
   <h2>СЛЕДВАЩИ</h2>
   <div id="next"></div>
 
   <script>
-    // Форматиране на дата: "25 юли, 07:00"
+    // Функция за конвертиране на BBCode [color=XXXXXX]текст[/color] в HTML
+    function parseBBCode(text) {
+      // Заменя [color=XXXXXX]текст[/color] със <span style="color: #XXXXXX">текст</span>
+      return text.replace(/\[color=([0-9a-fA-F]{6})\](.*?)\[\/color\]/g, function(match, color, content) {
+        return `<span style="color: #${color}">${content}</span>`;
+      });
+    }
+
     function formatBG(dateString) {
       const d = new Date(dateString);
       const day = d.getDate();
@@ -36,6 +40,22 @@
       const hours = String(d.getHours()).padStart(2, "0");
       const minutes = String(d.getMinutes()).padStart(2, "0");
       return `${day} ${month}, ${hours}:${minutes}`;
+    }
+
+    function renderEvent(ev) {
+      const div = document.createElement("div");
+      div.className = "card";
+      
+      // Парсване на заглавието и описанието за цветове
+      const titleHtml = parseBBCode(ev.title);
+      const descHtml = parseBBCode(ev.description || '');
+      
+      div.innerHTML = `
+        <div class="title">${titleHtml}</div>
+        <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
+        <div class="small">${descHtml}</div>
+      `;
+      return div;
     }
 
     async function loadToday() {
@@ -48,14 +68,7 @@
         return;
       }
       data.forEach(ev => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <div class="title">${ev.title}</div>
-          <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
-        `;
-        box.appendChild(div);
+        box.appendChild(renderEvent(ev));
       });
     }
 
@@ -69,14 +82,7 @@
         return;
       }
       data.forEach(ev => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <div class="title">${ev.title}</div>
-          <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
-        `;
-        box.appendChild(div);
+        box.appendChild(renderEvent(ev));
       });
     }
 
@@ -101,14 +107,7 @@
       }
 
       past.slice(-10).forEach(ev => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <div class="title">${ev.title}</div>
-          <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
-          <div class="small">${ev.description}</div>
-        `;
-        box.appendChild(div);
+        box.appendChild(renderEvent(ev));
       });
     }
 
