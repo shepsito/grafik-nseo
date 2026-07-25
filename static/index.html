@@ -14,19 +14,30 @@
 </head>
 <body>
 
-  <!-- ПРЕМЕСТЕНО НАЙ-ГОРЕ -->
+  <!-- Минали събития най-горе -->
   <h2>МИНАЛИ</h2>
   <div id="past"></div>
 
-  <!-- ДНЕС В СРЕДАТА -->
+  <!-- Днес -->
   <h2>ДНЕС</h2>
   <div id="today"></div>
 
-  <!-- СЛЕДВАЩИ НАЙ-ДОЛУ -->
+  <!-- Следващи -->
   <h2>СЛЕДВАЩИ</h2>
   <div id="next"></div>
 
   <script>
+    // Форматиране на дата: "25 юли, 07:00"
+    function formatBG(dateString) {
+      const d = new Date(dateString);
+      const day = d.getDate();
+      const months = ["януари","февруари","март","април","май","юни","юли","август","септември","октомври","ноември","декември"];
+      const month = months[d.getMonth()];
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      return `${day} ${month}, ${hours}:${minutes}`;
+    }
+
     async function loadToday() {
       const res = await fetch("/api/events/today");
       const data = await res.json();
@@ -41,7 +52,7 @@
         div.className = "card";
         div.innerHTML = `
           <div class="title">${ev.title}</div>
-          <div class="small">${ev.datetime} | ${ev.shift} | ${ev.facility}</div>
+          <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
           <div class="small">${ev.description}</div>
         `;
         box.appendChild(div);
@@ -62,7 +73,7 @@
         div.className = "card";
         div.innerHTML = `
           <div class="title">${ev.title}</div>
-          <div class="small">${ev.datetime} | ${ev.shift} | ${ev.facility}</div>
+          <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
           <div class="small">${ev.description}</div>
         `;
         box.appendChild(div);
@@ -94,17 +105,22 @@
         div.className = "card";
         div.innerHTML = `
           <div class="title">${ev.title}</div>
-          <div class="small">${ev.datetime} | ${ev.shift} | ${ev.facility}</div>
+          <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
           <div class="small">${ev.description}</div>
         `;
         box.appendChild(div);
       });
     }
 
+    loadPast();
     loadToday();
     loadNext();
-    loadPast();
-    setInterval(() => { loadToday(); loadNext(); loadPast(); }, 60000);
+
+    setInterval(() => {
+      loadPast();
+      loadToday();
+      loadNext();
+    }, 60000);
   </script>
 </body>
 </html>
