@@ -11,9 +11,12 @@
     .card:hover { background:#222233; }
     .title { font-weight:bold; color: #fff; }
     .small { color:#aaa; font-size:0.9em; }
-    .shift-1 { border-left-color: #ff6b6b; }
-    .shift-2 { border-left-color: #4ecdc4; }
-    .shift-3 { border-left-color: #ffe66d; }
+    .shift-1 { border-left-color: #ff6b6b; background: #1a1a2e; }
+    .shift-1 .title { color: #ff6b6b; }
+    .shift-2 { border-left-color: #4ecdc4; background: #1a2a2a; }
+    .shift-2 .title { color: #4ecdc4; }
+    .shift-3 { border-left-color: #ffe66d; background: #2a2a1a; }
+    .shift-3 .title { color: #ffe66d; }
     .empty { color: #555; font-style: italic; padding: 15px 10px; }
   </style>
 </head>
@@ -29,6 +32,8 @@
   <div id="next"></div>
 
   <script>
+    const API_BASE = '';
+
     function parseBBCode(text) {
       if (!text) return '';
       return text.replace(/\[color=([0-9a-fA-F]{6})\](.*?)\[\/color\]/g, function(match, color, content) {
@@ -60,17 +65,15 @@
       
       const titleHtml = parseBBCode(ev.title);
       const descHtml = parseBBCode(ev.description || '');
+      const timeDisplay = ev.formatted_time || formatBG(ev.datetime);
       
       div.innerHTML = `
         <div class="title">${titleHtml}</div>
-        <div class="small">${formatBG(ev.datetime)} | ${ev.shift} | ${ev.facility}</div>
+        <div class="small">${timeDisplay} | ${ev.shift} | ${ev.facility}</div>
         <div class="small">${descHtml}</div>
       `;
       return div;
     }
-
-    // Използваме относителен път - работи и локално, и на Render
-    const API_BASE = '';
 
     async function loadToday() {
       try {
@@ -79,7 +82,7 @@
         const box = document.getElementById("today");
         box.innerHTML = "";
         if (!data || !data.length) {
-          box.innerHTML = "<div class='empty'>Няма събития за днес</div>";
+          box.innerHTML = "<div class='empty'>✅ Няма събития за днес</div>";
           return;
         }
         data.forEach(ev => {
@@ -87,7 +90,7 @@
         });
       } catch (error) {
         console.error('Грешка:', error);
-        document.getElementById("today").innerHTML = "<div class='empty'>Грешка при зареждане</div>";
+        document.getElementById("today").innerHTML = "<div class='empty'>❌ Грешка при зареждане</div>";
       }
     }
 
