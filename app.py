@@ -47,15 +47,19 @@ def generate_yearly_schedule(year):
         month = current.month
         week = get_week_of_month(current)
 
+        # Смяна 1 - НОЩНА СМЯНА (започва в 23:00 на предходния ден)
         def night_event(title, facility, description):
+            night_start = current - timedelta(days=1)
+            night_start = night_start.replace(hour=23, minute=0, second=0, microsecond=0)
             return {
-                'datetime': current.replace(hour=23, minute=0, second=0, microsecond=0),
+                'datetime': night_start,
                 'title': title.strip(),
                 'facility': facility,
                 'description': description,
                 'shift': 'Смяна 1'
             }
 
+        # Смяна 2 - СУТРЕШНА СМЯНА (започва в 07:00)
         def morning_event(title, facility, description):
             return {
                 'datetime': current.replace(hour=7, minute=0, second=0, microsecond=0),
@@ -65,6 +69,7 @@ def generate_yearly_schedule(year):
                 'shift': 'Смяна 2'
             }
 
+        # Смяна 3 - СЛЕДОБЕДНА СМЯНА (започва в 15:00)
         def afternoon_event(title, facility, description):
             return {
                 'datetime': current.replace(hour=15, minute=0, second=0, microsecond=0),
@@ -75,81 +80,81 @@ def generate_yearly_schedule(year):
             }
 
         # --- УСЛОВИЯ ---
+
+        # Проверка АВР - февруари и септември, първи понеделник, 15:00
         if month in [2,9] and current.weekday()==0 and week==1:
             events.append(afternoon_event('Проверка АВР','Аварийно осветление','Проверка АВР на захранването-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # ЕЕ ЦПС-1 - 11 и 12 число, 15:00
         if day in [11,12]:
             events.append(afternoon_event('ЕЕ ЦПС-1','ЕЕ ЦПС-1','Проверка изправноста на аварийно осветление-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # Ф.И. Проверка - март и октомври, понеделник, седмица 1 и 2, 07:00
         if month in [3,10] and current.weekday()==0 and week in [1,2]:
             events.append(morning_event('Ф.И. Проверка','По процедура','Ф.И аварийно осветление-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # МЗ и ЕЕ ЦПС-1 - 15 число, 15:00
         if day == 15:
             events.append(afternoon_event('МЗ и ЕЕ ЦПС-1','МЗ и ЕЕ ЦПС-1','Проверка евакуационно осветление-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # Проверка АВР (Пон.) - последен понеделник на тримесечието, 15:00
         if is_last_monday_of_quarter(current):
             events.append(afternoon_event('Проверка АВР (Пон.)','МЗ,ЦПС-1','Проверка АВР на сборки 0.4кВ захранвани от 3 и 4БН-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # Проверка АВР (Вт.) - последен вторник на тримесечието, 15:00
         if is_last_tuesday_of_quarter(current):
             events.append(afternoon_event('Проверка АВР (Вт.)','МЗ','Проверка АВР на сборки 0.4кВ захранвани от 23 и 24БН-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # Проверка АВР (Ср.) - последна сряда на тримесечието, 15:00
         if is_last_wednesday_of_quarter(current):
             events.append(afternoon_event('Проверка АВР (Ср.)','МЗ','Проверка АВР на сборки 0.4кВ на съответната система I(II,III)-блок3-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # Проверка АВР (Четв.) - последен четвъртък на тримесечието, 15:00
         if is_last_thursday_of_quarter(current):
             events.append(afternoon_event('Проверка АВР (Четв.)','МЗ','Проверка АВР на сборки 0.4кВ на съответната система I(II,III)-блок4-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # Проверка АВР (Петък) - последен петък на тримесечието, НОЩНА СМЯНА (23:00 на предходния ден)
         if is_last_friday_of_quarter(current):
             events.append(night_event('Проверка АВР (Петък)','МЗ,ХВО и ЦПС-1','Проверка АВР на сборки 0.4кВ/без сборки захр.от 3,4,23,24БН,33I-III,43I-III/-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
-        # СЕКЦИИ 0,4кВ-ГК - започва в 23:00 на 7-ми, приключва в 07:00 на 8-ми
+        # Секции 0,4кВ-ГК - 8 число, НОЩНА СМЯНА (23:00 на 7-ми)
         if day == 8:
-            night_before = current - timedelta(days=1)
-            night_before = night_before.replace(hour=23, minute=0, second=0, microsecond=0)
-            
-            events.append({
-                'datetime': night_before,
-                'title': 'Секции 0,4кВ-ГК',
-                'facility': 'Секции 0,4кВ-ГК',
-                'description': 'Проверка АВР na ~ШУ и изправноста на сигнализацията на панел "С"в БЩУ4 за повикване в КРУ-[color=ff0000]ДИС,ОЕОи СКУ[/color]',
-                'shift': 'Смяна 1'
-            })
+            events.append(night_event('Секции 0,4кВ-ГК','Секции 0,4кВ-ГК','Проверка АВР na ~ШУ и изправноста на сигнализацията на панел "С"в БЩУ4 за повикване в КРУ-[color=ff0000]ДИС,ОЕОи СКУ[/color]'))
 
+        # Вентилни отводи - 18 число, 15:00
         if day == 18:
             events.append(afternoon_event('Вентилни отводи','Вентилни отводи','Отчитане на вентилни отводи-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
-        # 1-ви ден от месеца - нощна смяна започва в 23:00 на последния ден от предходния месец
+        # 1-ви ден от месеца - НОЩНА СМЯНА (23:00 на последния ден от предходния месец)
         if day == 1:
-            night_before = current - timedelta(days=1)
-            night_before = night_before.replace(hour=23, minute=0, second=0, microsecond=0)
-            
-            events.append({
-                'datetime': night_before,
-                'title': 'Ел.двигатели 6кВ',
-                'facility': 'Ел.двигатели 6кВ',
-                'description': 'Измерване Riso на ел.двигатели 6кВ-ПВТ в резерв,1 и 2 ПВТ -[color=ff0000]НСЕО,ОЕОи СКУ[/color]',
-                'shift': 'Смяна 1'
-            })
+            events.append(night_event('Ел.двигатели 6кВ','Ел.двигатели 6кВ','Измерване Riso на ел.двигатели 6кВ-ПВТ в резерв,1 и 2 ПВТ -[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
             events.append(morning_event('Отчитане електромери','Методика','Отчитане показанията на електромерите за консумираната ел.енергия-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # Проверка ДГ-А - януари, април, юли, октомври, понеделник, седмица 1, 07:00
         if month in [1,4,7,10] and current.weekday()==0 and week==1:
             events.append(morning_event('Проверка ДГ-А','ДГ-А','Ф.И на автономен товар за време ≥60мин-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # Проверка ДГ-Б - януари, април, юли, октомври, понеделник, седмица 2, 07:00
         if month in [1,4,7,10] and current.weekday()==0 and week==2:
             events.append(morning_event('Проверка ДГ-Б','ДГ-Б','Ф.И на автономен товар за време ≥60мин-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # Проверка 2АДГ-ДСАПП-4 - януари, април, юли, октомври, сряда, седмица 3, 07:00
         if month in [1,4,7,10] and current.weekday()==2 and week==3:
             events.append(morning_event('Проверка 2АДГ-ДСАПП-4','2АДГ-ДСАПП-4','Ф.И аварийно захранване на СПИ-[color=ff0000]НСЕО,ЕнергетикПРАО[/color]'))
 
+        # Проверка ДГ-КАС - януари, април, юли, октомври, четвъртък, седмица 3, 07:00
         if month in [1,4,7,10] and current.weekday()==3 and week==3:
             events.append(morning_event('Проверка ДГ-КАС','ДГ-КАС','Ф.И аварийно захранване на СПИ-[color=ff0000]НСЕО,ЕнергетикПРАО[/color]'))
 
+        # Проверка ГРТ-ЦНРД - юни и декември, понеделник, седмица 3, 07:00
         if month in [6,12] and current.weekday()==0 and week==3:
             events.append(morning_event('Проверка ГРТ-ЦНРД','ГРТ-ЦНРД','Изпробване АВР на ел.захранването-[color=ff0000]НСЕО,ЕнергетикПРАО,ДИС[/color]'))
 
+        # Проверка ТП1,ТП3 - събота, седмица 3, 07:00
         if current.weekday() == 5 and week == 3:
             events.append(morning_event('Проверка ТП1,ТП3','ТП1,ТП3','Изпробване на охлаждащите вентилатори на 1ТП и 3ТП чрез ръчно включване-[color=ff0000]НСЕО[/color]'))
 
+        # Измерване стойности по фидери - сряда и събота, седмица 3
         if current.weekday() in [2,5] and week == 3:
             events.append(night_event('Измерване стойности по фидери','Методика','Измерване стойностите по фидери за АКС,СБК-2 и ТРЗ/Бюро пропуски -[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
             events.append(morning_event('Измерване стойности по фидери','Методика','Измерване стойностите по фидери за АКС,СБК-2 и ТРЗ/Бюро пропуски-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
@@ -158,6 +163,7 @@ def generate_yearly_schedule(year):
         current += timedelta(days=1)
 
     return sorted(events, key=lambda x: x['datetime'])
+
 
 # ========== ПОМОЩНИ ФУНКЦИИ ==========
 
@@ -170,6 +176,7 @@ def format_bg_datetime(dt):
     minutes = str(dt.minute).zfill(2)
     return f"{day} {month}, {hours}:{minutes}"
 
+
 def get_events_for_date(events, date):
     """Връща ВСИЧКИ събития за дадена дата"""
     date_events = []
@@ -179,6 +186,7 @@ def get_events_for_date(events, date):
             date_events.append(event)
     
     return sorted(date_events, key=lambda x: x['datetime'])
+
 
 # ========== FLASK РУТОВЕ ==========
 
@@ -200,6 +208,7 @@ def home():
     </body>
     </html>
     '''
+
 
 @app.route('/api/events/today')
 def get_today_events():
@@ -235,6 +244,7 @@ def get_today_events():
         })
     
     return jsonify(result)
+
 
 @app.route('/api/events/past')
 def get_past_events():
@@ -284,6 +294,7 @@ def get_past_events():
     
     return jsonify(result)
 
+
 @app.route('/api/events/next')
 def get_next_events():
     """Следващи събития"""
@@ -322,6 +333,7 @@ def get_next_events():
         })
     
     return jsonify(result)
+
 
 # ========== СТАРТИРАНЕ ==========
 
