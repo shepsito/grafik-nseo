@@ -1,2 +1,4 @@
 Flask
 gunicorn
+txt
+flask-cors==4.0.1
