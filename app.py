@@ -139,17 +139,23 @@ def generate_yearly_schedule(year):
 
     return sorted(events, key=lambda x: x['datetime'])
 
+# ========== ПОМОЩНИ ФУНКЦИИ ==========
+
+def format_bg_datetime(dt):
+    """Форматира дата на български"""
+    day = dt.day
+    months = ["януари","февруари","март","април","май","юни","юли","август","септември","октомври","ноември","декември"]
+    month = months[dt.month - 1]
+    hours = str(dt.hour).zfill(2)
+    minutes = str(dt.minute).zfill(2)
+    return f"{day} {month}, {hours}:{minutes}"
+
 def get_events_for_date(events, date):
-    """Връща всички активни събития за дадена дата"""
+    """Връща ВСИЧКИ събития за дадена дата"""
     date_events = []
     
     for event in events:
-        event_date = event['datetime'].date()
-        event_hour = event['datetime'].hour
-        
-        if event_date == date.date():
-            date_events.append(event)
-        elif event_date == (date - timedelta(days=1)).date() and event_hour == 23:
+        if event['datetime'].date() == date.date():
             date_events.append(event)
     
     return sorted(date_events, key=lambda x: x['datetime'])
@@ -158,7 +164,6 @@ def get_events_for_date(events, date):
 
 @app.route('/')
 def home():
-    """Начална страница - показва HTML"""
     return '''
     <!DOCTYPE html>
     <html>
@@ -178,7 +183,7 @@ def home():
 
 @app.route('/api/events/today')
 def get_today_events():
-    """Връща всички активни събития за днес"""
+    """Всички събития за днес (от 00:01 до 23:59)"""
     year = 2026
     events = generate_yearly_schedule(year)
     today = datetime.now()
@@ -187,9 +192,71 @@ def get_today_events():
     
     result = []
     for ev in today_events:
+        if ev['shift'] == 'Смяна 1':
+            dt = ev['datetime']
+            next_day = dt + timedelta(days=1)
+            months = ["януари","февруари","март","април","май","юни","юли","август","септември","октомври","ноември","декември"]
+            month = months[next_day.month - 1]
+            formatted_time = f"{next_day.day} {month}, 00:00 🌙 (започва в 23:00 на {dt.day} {months[dt.month - 1]})"
+        elif ev['shift'] == 'Смяна 2':
+            formatted_time = format_bg_datetime(ev['datetime']) + ' ☀️ (започва в 07:00)'
+        elif ev['shift'] == 'Смяна 3':
+            formatted_time = format_bg_datetime(ev['datetime']) + ' 🌅 (започва в 15:00)'
+        else:
+            formatted_time = format_bg_datetime(ev['datetime'])
+        
         result.append({
             'title': ev['title'].strip(),
             'datetime': ev['datetime'].isoformat(),
+            'formatted_time': formatted_time,
+            'shift': ev['shift'],
+            'facility': ev['facility'],
+            'description': ev['description']
+        })
+    
+    return jsonify(result)
+
+@app.route('/api/events/past')
+def get_past_events():
+    """Минали събития - приключили"""
+    year = 2026
+    events = generate_yearly_schedule(year)
+    today = datetime.now()
+    
+    past_events = []
+    for ev in events:
+        if ev['shift'] == 'Смяна 1':
+            end_time = ev['datetime'] + timedelta(hours=8)
+        elif ev['shift'] == 'Смяна 2':
+            end_time = ev['datetime'] + timedelta(hours=8)
+        elif ev['shift'] == 'Смяна 3':
+            end_time = ev['datetime'] + timedelta(hours=8)
+        else:
+            end_time = ev['datetime']
+        
+        if end_time < today:
+            past_events.append(ev)
+    
+    past_events = past_events[-10:]
+    
+    result = []
+    for ev in past_events:
+        if ev['shift'] == 'Смяна 1':
+            dt = ev['datetime']
+            next_day = dt + timedelta(days=1)
+            months = ["януари","февруари","март","април","май","юни","юли","август","септември","октомври","ноември","декември"]
+            formatted_time = f"{next_day.day} {months[next_day.month - 1]}, 00:00 🌙 (започва в 23:00 на {dt.day} {months[dt.month - 1]})"
+        elif ev['shift'] == 'Смяна 2':
+            formatted_time = format_bg_datetime(ev['datetime']) + ' ☀️ (започва в 07:00)'
+        elif ev['shift'] == 'Смяна 3':
+            formatted_time = format_bg_datetime(ev['datetime']) + ' 🌅 (започва в 15:00)'
+        else:
+            formatted_time = format_bg_datetime(ev['datetime'])
+        
+        result.append({
+            'title': ev['title'].strip(),
+            'datetime': ev['datetime'].isoformat(),
+            'formatted_time': formatted_time,
             'shift': ev['shift'],
             'facility': ev['facility'],
             'description': ev['description']
@@ -199,7 +266,7 @@ def get_today_events():
 
 @app.route('/api/events/next')
 def get_next_events():
-    """Връща следващите 15 събития"""
+    """Следващи събития"""
     year = 2026
     events = generate_yearly_schedule(year)
     today = datetime.now()
@@ -213,35 +280,22 @@ def get_next_events():
     
     result = []
     for ev in future_events[:15]:
+        if ev['shift'] == 'Смяна 1':
+            dt = ev['datetime']
+            next_day = dt + timedelta(days=1)
+            months = ["януари","февруари","март","април","май","юни","юли","август","септември","октомври","ноември","декември"]
+            formatted_time = f"{next_day.day} {months[next_day.month - 1]}, 00:00 🌙 (започва в 23:00 на {dt.day} {months[dt.month - 1]})"
+        elif ev['shift'] == 'Смяна 2':
+            formatted_time = format_bg_datetime(ev['datetime']) + ' ☀️ (започва в 07:00)'
+        elif ev['shift'] == 'Смяна 3':
+            formatted_time = format_bg_datetime(ev['datetime']) + ' 🌅 (започва в 15:00)'
+        else:
+            formatted_time = format_bg_datetime(ev['datetime'])
+        
         result.append({
             'title': ev['title'].strip(),
             'datetime': ev['datetime'].isoformat(),
-            'shift': ev['shift'],
-            'facility': ev['facility'],
-            'description': ev['description']
-        })
-    
-    return jsonify(result)
-
-@app.route('/api/events/past')
-def get_past_events():
-    """Връща последните 10 минали събития"""
-    year = 2026
-    events = generate_yearly_schedule(year)
-    today = datetime.now()
-    
-    past_events = []
-    for ev in events:
-        if ev['datetime'] < today:
-            past_events.append(ev)
-    
-    past_events = past_events[-10:]
-    
-    result = []
-    for ev in past_events:
-        result.append({
-            'title': ev['title'].strip(),
-            'datetime': ev['datetime'].isoformat(),
+            'formatted_time': formatted_time,
             'shift': ev['shift'],
             'facility': ev['facility'],
             'description': ev['description']
@@ -252,9 +306,5 @@ def get_past_events():
 # ========== СТАРТИРАНЕ ==========
 
 if __name__ == '__main__':
-    # Вземаме порта от средата (Render) или използваме 5000 локално
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
-else:
-    # За Gunicorn (Render)
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev')
