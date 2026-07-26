@@ -15,7 +15,6 @@
     .shift-2 { border-left-color: #4ecdc4; }
     .shift-3 { border-left-color: #ffe66d; }
     .empty { color: #555; font-style: italic; padding: 15px 10px; }
-    .debug { background: #1a1a2e; color: #0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 200px; overflow: auto; }
   </style>
 </head>
 <body>
@@ -29,12 +28,7 @@
   <h2>📅 СЛЕДВАЩИ</h2>
   <div id="next"></div>
 
-  <!-- Дебъг панел -->
-  <h2>🐛 ДЕБЪГ</h2>
-  <div id="debug" class="debug"></div>
-
   <script>
-    // Функция за конвертиране на BBCode
     function parseBBCode(text) {
       if (!text) return '';
       return text.replace(/\[color=([0-9a-fA-F]{6})\](.*?)\[\/color\]/g, function(match, color, content) {
@@ -42,14 +36,6 @@
       });
     }
 
-    // Функция за дебъг
-    function debugLog(message) {
-      const debugDiv = document.getElementById('debug');
-      debugDiv.innerHTML += message + '\n';
-      debugDiv.scrollTop = debugDiv.scrollHeight;
-    }
-
-    // Форматиране на дата
     function formatBG(dateString) {
       const d = new Date(dateString);
       const day = d.getDate();
@@ -83,36 +69,31 @@
       return div;
     }
 
+    // Използваме относителен път - работи и локално, и на Render
+    const API_BASE = '';
+
     async function loadToday() {
       try {
-        debugLog('🔄 Зареждане на днешни събития...');
-        const res = await fetch("/api/events/today");
+        const res = await fetch(`${API_BASE}/api/events/today`);
         const data = await res.json();
-        
-        debugLog(`📥 Получени ${data.length} събития за днес`);
-        
         const box = document.getElementById("today");
         box.innerHTML = "";
-        
         if (!data || !data.length) {
           box.innerHTML = "<div class='empty'>Няма събития за днес</div>";
           return;
         }
-        
-        data.forEach((ev, index) => {
-          debugLog(`  ${index+1}. ${ev.title} - ${ev.datetime} - ${ev.shift}`);
+        data.forEach(ev => {
           box.appendChild(renderEvent(ev));
         });
       } catch (error) {
         console.error('Грешка:', error);
-        debugLog(`❌ ГРЕШКА: ${error.message}`);
         document.getElementById("today").innerHTML = "<div class='empty'>Грешка при зареждане</div>";
       }
     }
 
     async function loadNext() {
       try {
-        const res = await fetch("/api/events/next");
+        const res = await fetch(`${API_BASE}/api/events/next`);
         const data = await res.json();
         const box = document.getElementById("next");
         box.innerHTML = "";
@@ -131,7 +112,7 @@
 
     async function loadPast() {
       try {
-        const res = await fetch("/api/events/past");
+        const res = await fetch(`${API_BASE}/api/events/past`);
         const data = await res.json();
         const box = document.getElementById("past");
         box.innerHTML = "";
@@ -148,11 +129,6 @@
       }
     }
 
-    // Изчистваме дебъг и зареждаме
-    document.getElementById('debug').innerHTML = '🐛 ДЕБЪГ ЛОГ:\n';
-    debugLog('🚀 Стартиране на приложението...');
-    debugLog(`📅 Текуща дата: ${new Date().toLocaleString()}`);
-    
     loadPast();
     loadToday();
     loadNext();
