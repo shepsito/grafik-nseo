@@ -102,14 +102,24 @@ def generate_yearly_schedule(year):
         if is_last_friday_of_quarter(current):
             events.append(night_event('Проверка АВР (Петък)','МЗ,ХВО и ЦПС-1','Проверка АВР на сборки 0.4кВ/без сборки захр.от 3,4,23,24БН,33I-III,43I-III/-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # СЕКЦИИ 0,4кВ-ГК - започва в 23:00 на 7-ми, приключва в 07:00 на 8-ми
         if day == 8:
-            events.append(night_event('Секции 0,4кВ-ГК','Секции 0,4кВ-ГК','Проверка АВР na ~ШУ и изправноста на сигнализацията на панел "С"в БЩУ4 за повикване в КРУ-[color=ff0000]ДИС,ОЕОи СКУ[/color]'))
+            night_before = current - timedelta(days=1)
+            night_before = night_before.replace(hour=23, minute=0, second=0, microsecond=0)
+            
+            events.append({
+                'datetime': night_before,
+                'title': 'Секции 0,4кВ-ГК',
+                'facility': 'Секции 0,4кВ-ГК',
+                'description': 'Проверка АВР na ~ШУ и изправноста на сигнализацията на панел "С"в БЩУ4 за повикване в КРУ-[color=ff0000]ДИС,ОЕОи СКУ[/color]',
+                'shift': 'Смяна 1'
+            })
 
         if day == 18:
             events.append(afternoon_event('Вентилни отводи','Вентилни отводи','Отчитане на вентилни отводи-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
+        # 1-ви ден от месеца - нощна смяна започва в 23:00 на последния ден от предходния месец
         if day == 1:
-            # Нощна смяна - започва в 23:00 на последния ден от предходния месец
             night_before = current - timedelta(days=1)
             night_before = night_before.replace(hour=23, minute=0, second=0, microsecond=0)
             
