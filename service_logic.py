@@ -48,8 +48,8 @@ def generate_yearly_schedule(year):
         # Смяна 1 → 23:00 (нощна смяна)
         def night_event(title, facility, description):
             return {
-                'datetime': current.replace(hour=23, minute=0),
-                'title': title,
+                'datetime': current.replace(hour=23, minute=0, second=0, microsecond=0),
+                'title': title.strip(),
                 'facility': facility,
                 'description': description,
                 'shift': 'Смяна 1'
@@ -58,8 +58,8 @@ def generate_yearly_schedule(year):
         # Смяна 2 → 07:00 (сутрешна смяна)
         def morning_event(title, facility, description):
             return {
-                'datetime': current.replace(hour=7, minute=0),
-                'title': title,
+                'datetime': current.replace(hour=7, minute=0, second=0, microsecond=0),
+                'title': title.strip(),
                 'facility': facility,
                 'description': description,
                 'shift': 'Смяна 2'
@@ -68,8 +68,8 @@ def generate_yearly_schedule(year):
         # Смяна 3 → 15:00 (следобедна смяна)
         def afternoon_event(title, facility, description):
             return {
-                'datetime': current.replace(hour=15, minute=0),
-                'title': title,
+                'datetime': current.replace(hour=15, minute=0, second=0, microsecond=0),
+                'title': title.strip(),
                 'facility': facility,
                 'description': description,
                 'shift': 'Смяна 3'
@@ -129,10 +129,12 @@ def generate_yearly_schedule(year):
         if month in [6,12] and current.weekday()==0 and week==3:
             events.append(morning_event('Проверка ГРТ-ЦНРД','ГРТ-ЦНРД','Изпробване АВР на ел.захранването-[color=ff0000]НСЕО,ЕнергетикПРАО,ДИС[/color]'))
 
-        if current.weekday() == 5 and week == 3:  # Събота
+        # СЪБОТА - седмица 3 - 07:00
+        if current.weekday() == 5 and week == 3:  # 5 = събота
             events.append(morning_event('Проверка ТП1,ТП3','ТП1,ТП3','Изпробване на охлаждащите вентилатори на 1ТП и 3ТП чрез ръчно включване-[color=ff0000]НСЕО[/color]'))
 
-        if current.weekday() in [2,5] and week == 3:  # Сряда и Събота
+        # СРЯДА и СЪБОТА - седмица 3
+        if current.weekday() in [2,5] and week == 3:
             events.append(night_event('Измерване стойности по фидери','Методика','Измерване стойностите по фидери за АКС,СБК-2 и ТРЗ/Бюро пропуски -[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
             events.append(morning_event('Измерване стойности по фидери','Методика','Измерване стойностите по фидери за АКС,СБК-2 и ТРЗ/Бюро пропуски-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
             events.append(afternoon_event('Измерване стойности по фидери','Методика','Измерване стойностите по фидери за АКС,СБК-2 и ТРЗ/Бюро пропуски-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
@@ -141,15 +143,8 @@ def generate_yearly_schedule(year):
 
     return sorted(events, key=lambda x: x['datetime'])
 
-# Функция за получаване на събития за дадена дата (включително нощните)
 def get_events_for_date(events, date):
-    """
-    Връща всички активни събития за дадена дата
-    Включва:
-    - Събития за този ден (7:00 и 15:00)
-    - Нощни смени от този ден в 23:00
-    - Нощни смени от предишния ден в 23:00 (които продължават)
-    """
+    """Връща всички активни събития за дадена дата"""
     date_events = []
     
     for event in events:
@@ -170,50 +165,18 @@ def get_events_for_date(events, date):
 
 # Тест
 if __name__ == "__main__":
-    # Генериране на графика
-    year = 2026
-    events = generate_yearly_schedule(year)
+    events = generate_yearly_schedule(2026)
     
-    # Тест за 25.07.2026 (Събота)
+    # Проверка за 25.07.2026
     test_date = datetime(2026, 7, 25)
     day_events = get_events_for_date(events, test_date)
     
-    print(f"\n📅 СЪБИТИЯ ЗА {test_date.strftime('%d.%m.%Y (%A)')}")
-    print("=" * 70)
+    print(f"Събития за {test_date.strftime('%d.%m.%Y (%A)')}:")
+    print("=" * 60)
     
-    if day_events:
-        for ev in day_events:
-            print(f"\n📌 {ev['title']}")
-            print(f"   ⏰ {ev['datetime'].strftime('%H:%M')} часа")
-            print(f"   👤 {ev['shift']}")
-            print(f"   🏢 {ev['facility']}")
-            print(f"   📝 {ev['description'][:80]}...")
-    else:
-        print("✅ Няма събития")
-    
-    # Проверка дали morning_event е с 07:00
-    print("\n" + "=" * 70)
-    print("ПРОВЕРКА ЗА 07:00:")
-    morning_events = [e for e in day_events if e['datetime'].hour == 7]
-    if morning_events:
-        print(f"✅ Намерени {len(morning_events)} събития в 07:00")
-        for ev in morning_events:
-            print(f"   - {ev['title']} в {ev['datetime'].strftime('%H:%M')}")
-    else:
-        print("❌ Няма събития в 07:00")
-    
-    # Проверка за 25.07.2026 (Събота) в седмица 3
-    print("\n" + "=" * 70)
-    print("ПРОВЕРКА ЗА 25.07.2026 (СЪБОТА, СЕДМИЦА 3):")
-    check_date = datetime(2026, 7, 25)
-    week = get_week_of_month(check_date)
-    weekday = check_date.weekday()
-    print(f"   Дата: {check_date.strftime('%d.%m.%Y')}")
-    print(f"   Седмица: {week}")
-    print(f"   Ден от седмицата: {weekday} (0=понеделник, 5=събота)")
-    
-    # Проверка дали условието за събота работи
-    if weekday == 5 and week == 3:
-        print("   ✅ Условието за събота и седмица 3 е ИСТИНА")
-    else:
-        print("   ❌ Условието за събота и седмица 3 е НЕИСТИНА")
+    for ev in day_events:
+        print(f"📌 {ev['title']}")
+        print(f"   ⏰ {ev['datetime'].strftime('%H:%M')}")
+        print(f"   👤 {ev['shift']}")
+        print(f"   🏢 {ev['facility']}")
+        print("-" * 40)
