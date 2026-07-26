@@ -109,7 +109,17 @@ def generate_yearly_schedule(year):
             events.append(afternoon_event('Вентилни отводи','Вентилни отводи','Отчитане на вентилни отводи-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
         if day == 1:
-            events.append(night_event('Ел.двигатели 6кВ','Ел.двигатели 6кВ','Измерване Riso на ел.двигатели 6кВ-ПВТ в резерв,1 и 2 ПВТ -[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
+            # Нощна смяна - започва в 23:00 на последния ден от предходния месец
+            night_before = current - timedelta(days=1)
+            night_before = night_before.replace(hour=23, minute=0, second=0, microsecond=0)
+            
+            events.append({
+                'datetime': night_before,
+                'title': 'Ел.двигатели 6кВ',
+                'facility': 'Ел.двигатели 6кВ',
+                'description': 'Измерване Riso на ел.двигатели 6кВ-ПВТ в резерв,1 и 2 ПВТ -[color=ff0000]НСЕО,ОЕОи СКУ[/color]',
+                'shift': 'Смяна 1'
+            })
             events.append(morning_event('Отчитане електромери','Методика','Отчитане показанията на електромерите за консумираната ел.енергия-[color=ff0000]НСЕО,ОЕОи СКУ[/color]'))
 
         if month in [1,4,7,10] and current.weekday()==0 and week==1:
