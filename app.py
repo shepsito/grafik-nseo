@@ -22,7 +22,7 @@ def get_today_events():
     # Вземаме всички събития за днес (включително нощните от вчера)
     today_events = get_events_for_date(events, today)
     
-    print(f"✅ Намерени {len(today_events)} активни събития за днес:")
+    print(f" Намерени {len(today_events)} активни събития за днес:")
     
     result = []
     for ev in today_events:
