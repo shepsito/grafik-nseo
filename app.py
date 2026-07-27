@@ -191,7 +191,7 @@ def home():
 @app.route('/api/events/today')
 def get_today_events():
     """Всички събития за днес (от 00:01 до 23:59)"""
-    year = datetime.now().year
+    year = datetime.now().year  # Динамична година
     events = generate_yearly_schedule(year)
     today = datetime.now()
     
@@ -227,7 +227,7 @@ def get_today_events():
 @app.route('/api/events/past')
 def get_past_events():
     """Минали събития - приключили"""
-    year = datetime.now().year
+    year = datetime.now().year  # Динамична година
     events = generate_yearly_schedule(year)
     today = datetime.now()
     
@@ -276,10 +276,11 @@ def get_past_events():
 @app.route('/api/events/next')
 def get_next_events():
     """Следващи събития - показва първите 15"""
-    year = datetime.now().year
+    year = datetime.now().year  # Динамична година
     events = generate_yearly_schedule(year)
     today = datetime.now()
     
+    # Вземаме първите 30 бъдещи събития (за да имаме откъде да изберем 15)
     future_events = []
     for ev in events:
         if ev['datetime'] > today:
@@ -288,7 +289,7 @@ def get_next_events():
             break
     
     result = []
-    for ev in future_events[:15]:
+    for ev in future_events[:15]:  # Показваме само 15
         if ev['shift'] == 'Смяна 1':
             dt = ev['datetime']
             next_day = dt + timedelta(days=1)
